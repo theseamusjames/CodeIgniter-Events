@@ -6,9 +6,10 @@
  *
  * @package		CodeIgniter
  * @subpackage	Events
- * @version		1.0
+ * @version		1.0.1
  * @author		Eric Barnes <http://ericlbarnes.com>
  * @author		Dan Horrigan <http://dhorrigan.com>
+ * @author		Seamus James <http://seamusjam.es>
  * @license		Apache License v2.0
  * @copyright	2010 Dan Horrigan
  *
@@ -35,6 +36,38 @@ class Events {
 	 */
 	protected static $_listeners = array();
 
+	function __construct() 
+	{
+		self::log_message('debug', "Events: Loading config file.");
+
+		//Load any events added to the config
+		if (defined('ENVIRONMENT') AND is_file(APPPATH.'config/'.ENVIRONMENT.'/events.php'))
+		{
+		    include(APPPATH.'config/'.ENVIRONMENT.'/events.php');
+		}
+		elseif (is_file(APPPATH.'config/events.php'))
+		{
+			include(APPPATH.'config/events.php');
+		}
+
+		if ( ! isset($events) OR ! is_array($events))
+		{
+			self::log_message('debug', "Events: No config file loaded.");
+			return;
+		}
+
+		foreach ( $events as $event => $handlers )
+		{
+			foreach ( $handlers as $handler )
+			{
+				if ( is_array($handler) )
+					$this->register ( $event, $handler );
+			}
+		}
+
+		self::log_message('debug', "Events: Config file loaded successfully.");
+	}
+
 	// ------------------------------------------------------------------------
 
 	/**
@@ -48,8 +81,12 @@ class Events {
 	 * @return	void
 	 */
 	public static function register($event, array $callback)
-	{
-		$key = get_class($callback[0]).'::'.$callback[1];
+	{	
+		if (is_object($callback[0]) ) 
+			$key = get_class($callback[0]).'::'.$callback[1];
+		else
+			$key = $callback[0].'::'.$callback[1];
+		
 		self::$_listeners[$event][$key] = $callback;
 		self::log_message('debug', 'Events::register() - Registered "'.$key.' with event "'.$event.'"');
 	}
@@ -85,7 +122,7 @@ class Events {
 			{
 				if (is_callable($listener))
 				{
-					$calls[] = call_user_func($listener, $data);
+					$calls[$listener] = call_user_func($listener, $data);
 				}
 			}
 		}

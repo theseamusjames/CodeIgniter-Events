@@ -6,6 +6,7 @@ Version 1.0.0
 
 * Author: [Eric Barnes](http://ericlbarnes.com/ "Eric Barnes")
 * Author: [Dan Horrigan](http://dhorrigan.com/ "Dan Horrigan")
+* Author: [Seamus James](http://seamusjam.es/ "Seamus James")
 
 ## Public Methods
 
@@ -15,7 +16,7 @@ Registers a Callback for a given event
 
 * $event *string*
 * $callback *array*
-* Example: `Events::register('test_string', array('Class_name', 'string_return'));`
+* Example: `Events::register('test_string', array('class_name', 'method'));`
 
 ### trigger
 
@@ -23,7 +24,7 @@ Triggers an event and returns the results.
 
 * $event *string* - The name of the event
 * $data *mixed* - Any data that is to be passed to the listener
-* $return_type *string* - Either 'array', 'json', 'serialized', or 'string'
+* $return_type *string* - Either 'array', 'json', 'serialized', or 'string'. Includes data from all listeners attached to the event.
 * Example: `Events::trigger('test_string', 'test', 'string');`
 
 ### has_listeners
@@ -96,4 +97,11 @@ class Test {
 		return 'I returned a string. Cakes and Pies!';
 	}
 }
+</pre>
+
+Events can also be loaded using a config file. Create a file `events.php` and put it in your `config` folder using the following format to pre-register events.
+<pre>
+$events['event_name']	= array(													
+									array(	"class_name", "method" )
+						);
 </pre>
